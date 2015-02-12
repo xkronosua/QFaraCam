@@ -18,7 +18,6 @@ SOURCES = \
 
 FORMS += \
     camera.ui \
-    videosettings.ui \
     imagesettings.ui
 
 target.path = $$[QT_INSTALL_EXAMPLES]/multimediawidgets/camera

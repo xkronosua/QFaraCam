@@ -216,7 +216,7 @@ void Camera::processCapturedImage(int requestId, const QImage& img)
                                     Qt::KeepAspectRatio,
                                     Qt::SmoothTransformation);
     gview->setSceneRect(0,0,scaledImage.width(),scaledImage.height());
-    gview->fitInView(gview->sceneRect(), Qt::Keep);
+    gview->fitInView(gview->sceneRect(), Qt::KeepAspectRatioByExpanding);
     //ui->lastImagePreviewLabel->setPixmap(QPixmap::fromImage(scaledImage));
     gview->setNewPixmap(QPixmap::fromImage(scaledImage));
     // Display captured image for 4 seconds.
