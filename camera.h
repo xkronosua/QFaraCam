@@ -44,13 +44,9 @@
 #include <QCamera>
 #include <QCameraImageCapture>
 #include <QMediaRecorder>
-
-#include <QPaintEvent>
-#include <QResizeEvent>
-
+#include <QGraphicsScene>
+#include "myqgraphicsview.h"
 #include <QMainWindow>
-
-#include "overlay.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class Camera; }
@@ -63,18 +59,22 @@ class Camera : public QMainWindow
 public:
     Camera(QWidget *parent = 0);
     ~Camera();
+    int getMode(){return this->mod;}
+
+signals:
 
 private slots:
-    void setCamera(const QByteArray &cameraDevice);
+    void setMode(int mode);
+    void setCamera(const QCameraInfo &cameraInfo);
 
     void startCamera();
     void stopCamera();
-
-    //void record();
-    //void pause();
-    //void stop();
-    //void setMuted(bool);
-
+/*
+    void record();
+    void pause();
+    void stop();
+    void setMuted(bool);
+*/
     void toggleLock();
     void takeImage();
     void displayCaptureError(int, QCameraImageCapture::Error, const QString &errorString);
@@ -83,17 +83,15 @@ private slots:
     //void configureVideoSettings();
     void configureImageSettings();
 
-   // void displayRecorderError();
+    void displayRecorderError();
     void displayCameraError();
 
     void updateCameraDevice(QAction *action);
 
-    void calibrateLength();
-
     void updateCameraState(QCamera::State);
-    void updateCaptureMode();
+   // void updateCaptureMode();
     //void updateRecorderState(QMediaRecorder::State state);
-    void setExposureCompensation(int index);
+//    void setExposureCompensation(int index);
 
     //void updateRecordTime();
 
@@ -103,39 +101,38 @@ private slots:
     void displayViewfinder();
     void displayCapturedImage();
 
-    void readyForCapture(bool ready);
+
+    //void readyForCapture(bool ready);
     void imageSaved(int id, const QString &fileName);
+    void calibrateLength();
+    void measureLength();
     void updateRField(float);
+    void updateRealRField(float);
+    void updateCoefField(double);
 
 protected:
-    void keyPressEvent(QKeyEvent *event);
-    void keyReleaseEvent(QKeyEvent *event);
+    //void keyPressEvent(QKeyEvent *event);
+    //void keyReleaseEvent(QKeyEvent *event);
     void closeEvent(QCloseEvent *event);
-    //void mousePressEvent(QMouseEvent *event);
-    //void mouseMoveEvent(QMouseEvent *event);
-    //void mouseReleaseEvent(QMouseEvent *event);
-  //  void paintEvent(QPaintEvent *event);
-    void resizeEvent(QResizeEvent *event);
-
-
 
 private:
-
     Ui::Camera *ui;
+    //enum Mode {CALIBRATION = 0, PHOTO = 3, MEASUREMENT = 1, LIVE = 2};
+    int mod;
 
     QCamera *camera;
     QCameraImageCapture *imageCapture;
-    //QMediaRecorder* mediaRecorder;
+    QMediaRecorder* mediaRecorder;
 
     QImageEncoderSettings imageSettings;
-    //QAudioEncoderSettings audioSettings;
-    //QVideoEncoderSettings videoSettings;
-    //QString videoContainerFormat;
+    QAudioEncoderSettings audioSettings;
+    QVideoEncoderSettings videoSettings;
+    QString videoContainerFormat;
     bool isCapturingImage;
     bool applicationExiting;
-
-    Overlay *overlay;
-
+    MyQGraphicsView *gview;
+    QGraphicsScene *scene;
+    double calibr_coef;
 };
 
 #endif
