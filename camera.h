@@ -47,6 +47,8 @@
 #include <QGraphicsScene>
 #include "myqgraphicsview.h"
 #include <QMainWindow>
+#include <QImageWriter>
+#include <QImageReader>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class Camera; }
@@ -69,6 +71,8 @@ private slots:
 
     void startCamera();
     void stopCamera();
+    void saveImage();
+    void openImage();
 /*
     void record();
     void pause();

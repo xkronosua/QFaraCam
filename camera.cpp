@@ -53,6 +53,7 @@
 #include <QPalette>
 
 #include <QtWidgets>
+#include <QFileDialog>
 
 Q_DECLARE_METATYPE(QCameraInfo)
 
@@ -84,6 +85,8 @@ Camera::Camera(QWidget *parent) :
 
 
     gview = new MyQGraphicsView(this);
+    scene = new QGraphicsScene();
+    gview->setNewScene(scene);
     ui->draw_container->addWidget(gview);
 
 
@@ -100,11 +103,14 @@ Camera::Camera(QWidget *parent) :
     connect(ui->calibr_length, SIGNAL(valueChanged(double)), this, SLOT(updateCoefField(double)));
     connect(ui->action_live,SIGNAL(triggered()), this, SLOT(displayViewfinder()));
     connect(ui->action_measure,SIGNAL(triggered()), this, SLOT(measureLength()));
+    connect(ui->actionSave,SIGNAL(triggered()), this, SLOT(saveImage()));
+    connect(ui->actionOpen,SIGNAL(triggered()), this, SLOT(openImage()));
+
 
     setCamera(QCameraInfo::defaultCamera());
     displayViewfinder();
    // gview->setScene(scene);
-    //scene = new QGraphicsScene(this);
+
     //gview->setScene(scene);
     //ui->graphicsView->setScene(scene);
     setMode(3);
@@ -129,11 +135,12 @@ void Camera::setCamera(const QCameraInfo &cameraInfo)
     connect(camera, SIGNAL(error(QCamera::Error)), this, SLOT(displayCameraError()));
 
     mediaRecorder = new QMediaRecorder(camera);
-    connect(mediaRecorder, SIGNAL(stateChanged(QMediaRecorder::State)), this, SLOT(updateRecorderState(QMediaRecorder::State)));
+    //connect(mediaRecorder, SIGNAL(stateChanged(QMediaRecorder::State)), this, SLOT(updateRecorderState(QMediaRecorder::State)));
 
     imageCapture = new QCameraImageCapture(camera);
-
-    connect(mediaRecorder, SIGNAL(durationChanged(qint64)), this, SLOT(updateRecordTime()));
+    imageCapture->setCaptureDestination(QCameraImageCapture::CaptureToBuffer);
+    imageCapture->setBufferFormat(QVideoFrame::Format_Jpeg);
+    //connect(mediaRecorder, SIGNAL(durationChanged(qint64)), this, SLOT(updateRecordTime()));
     connect(mediaRecorder, SIGNAL(error(QMediaRecorder::Error)), this, SLOT(displayRecorderError()));
 
     mediaRecorder->setMetaData(QMediaMetaData::Title, QVariant(QLatin1String("Test Title")));
@@ -146,7 +153,7 @@ void Camera::setCamera(const QCameraInfo &cameraInfo)
     updateLockStatus(camera->lockStatus(), QCamera::UserRequest);
     //updateRecorderState(mediaRecorder->state());
 
-    connect(imageCapture, SIGNAL(readyForCaptureChanged(bool)), this, SLOT(readyForCapture(bool)));
+    //connect(imageCapture, SIGNAL(readyForCaptureChanged(bool)), this, SLOT(readyForCapture(bool)));
     connect(imageCapture, SIGNAL(imageCaptured(int,QImage)), this, SLOT(processCapturedImage(int,QImage)));
     connect(imageCapture, SIGNAL(imageSaved(int,QString)), this, SLOT(imageSaved(int,QString)));
     connect(imageCapture, SIGNAL(error(int,QCameraImageCapture::Error,QString)), this,
@@ -212,13 +219,17 @@ void Camera::updateRecordTime()
 void Camera::processCapturedImage(int requestId, const QImage& img)
 {
     Q_UNUSED(requestId);
-    QImage scaledImage = img.scaled(ui->viewfinder->size(),
+
+
+            QImage scaledImage = img.scaled(ui->viewfinder->size(),
                                     Qt::KeepAspectRatio,
                                     Qt::SmoothTransformation);
-    gview->setSceneRect(0,0,scaledImage.width(),scaledImage.height());
-    gview->fitInView(gview->sceneRect(), Qt::KeepAspectRatioByExpanding);
+    scene->addPixmap(QPixmap::fromImage(scaledImage));
+
+    gview->setScene(scene);//setSceneRect(0,0,scaledImage.width(),scaledImage.height());
+    //gview->fitInView(gview->sceneRect(), Qt::KeepAspectRatioByExpanding);
     //ui->lastImagePreviewLabel->setPixmap(QPixmap::fromImage(scaledImage));
-    gview->setNewPixmap(QPixmap::fromImage(scaledImage));
+    //gview->setNewPixmap(QPixmap::fromImage(scaledImage));
     // Display captured image for 4 seconds.
     displayCapturedImage();
     //QTimer::singleShot(4000, this, SLOT(displayViewfinder()));
@@ -253,6 +264,53 @@ void Camera::configureCaptureSettings()
     default:
         break;
     }
+}
+
+
+void Camera::saveImage()
+{
+    QString fname = QFileDialog::getSaveFileName(this, tr("Save as..."),
+                                                 QString(), tr("*.png"));
+
+    QImageWriter writer(fname, "png");
+    writer.setText("Calibr.", QString::number(ui->calibr_coef->value()));
+    QImage image;
+    QGraphicsTextItem * io = new QGraphicsTextItem();
+    io->setPos(0,0);
+    QString text;
+    text.sprintf("L=%.3f mm", ui->real_len->value());
+    io->setPlainText(text);
+    io->setHtml("<div style='background-color:#ffffff;'>" + text + "</div>");
+    scene->addItem(io);
+    gview->toImage(image);
+    //QPixmap pixMap = gview->grab();
+    //        pixMap.save("a.png");
+
+    writer.write(image);
+}
+
+
+void Camera::openImage()
+{
+    QString fname = QFileDialog::getOpenFileName(this, tr("Save as..."),
+                                                 QString(), tr("*.png"));
+
+    QImageReader reader(fname);
+    //writer.setText("Calibr.", QString::number(ui->calibr_coef->value()));
+    QImage image;
+    //QImage icon(64, 64, QImage::Format_RGB32);
+    //QPixmap pixMap = gview->grab();
+    //        pixMap.save("a.png");
+
+    reader.read(&image);
+    scene->addPixmap(QPixmap::fromImage(image));
+    calibr_coef = (image.text().split(":")[1]).toDouble();
+    ui->calibr_coef->setValue( calibr_coef);
+
+    displayCapturedImage();
+    gview->drawState(0);
+    setMode(2);
+
 }
 /*
 void Camera::configureVideoSettings()
