@@ -1,10 +1,10 @@
-#include "camera.h"
+#include "qfaracam.h"
 #include <QApplication>
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    Camera w;
+    QFaraCam w;
     w.show();
 
     return a.exec();
