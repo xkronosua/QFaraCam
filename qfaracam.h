@@ -26,9 +26,10 @@ private slots:
     /*void on_videoWidget_destroyed();*/
     void saveImage();
     void openImage();
-    void on_exit_clicked();
+   // void on_exit_clicked();
     void onStartCapture();
     void onStopCapture();
+    void updateCameraDevice(QAction *a);
 
     void imageSaved(int id, const QString &fileName);
     void calibrateLength();

@@ -21,7 +21,7 @@
 class CaptureThread : public QThread
 {
 public:
-    explicit CaptureThread(QWidget *parent = 0);
+    explicit CaptureThread(QWidget *parent = 0, QString dev="/dev/video0");
     ~CaptureThread();
     bool devam;
 
@@ -34,9 +34,10 @@ public:
     struct timeval                  tv;
     int                             r, fd;
     unsigned int                    n_buffers;
-    char                            *dev_name;
+    QString                         dev_name;
     char                            out_name[256];
     FILE                            *fout;
+
 
 
     struct buffer {
@@ -62,6 +63,7 @@ public:
 
     void stopUlan();
     void startUlan();
+    void setDevice(char*);
 };
 
 

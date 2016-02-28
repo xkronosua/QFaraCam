@@ -30,7 +30,7 @@ void MyQGraphicsView::setNewScene(QGraphicsScene *s)
 void MyQGraphicsView::mousePressEvent(QMouseEvent * e)
 {
 
-
+qDebug("Mode: %d", camMod);
     if (inDrawing >=0){
         QPen *pen1, *pen2;
         if (camMod == 0){
@@ -96,7 +96,10 @@ void MyQGraphicsView::mousePressEvent(QMouseEvent * e)
 
 
 }
-
+void MyQGraphicsView::setCameraMod(int mod){
+    this->camMod=mod;
+    qDebug("Mode:%d",this->camMod);
+}
 
 
 void MyQGraphicsView::mouseMoveEvent(QMouseEvent * e)

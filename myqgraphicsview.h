@@ -19,8 +19,8 @@ public:
     explicit MyQGraphicsView(QWidget *parent = 0);
     void setNewPixmap(QPixmap);
     void setNewScene(QGraphicsScene *s);
-    void drawState(int state) {inDrawing = state;};
-    void setCameraMod(int mod){camMod = mod;};
+    void drawState(int state) {inDrawing = state;}
+    void setCameraMod(int mod);
     float value() const {return r_value;}
     void clv();
     void toImage(QImage &image);

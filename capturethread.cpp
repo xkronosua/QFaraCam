@@ -9,22 +9,25 @@
 #include <QFile>
 
 
-CaptureThread::CaptureThread(QWidget *parent) :
+CaptureThread::CaptureThread(QWidget *parent, QString dev) :
     QThread(parent)
 {
     //qDebug()<<parent->objectName();
     this->parent=(videowidget*)parent;
     devam=false;
     fd = -1;
+    dev_name = dev;
+
+    qDebug("Thread: %s",dev.toStdString().c_str());
 }
 
 void CaptureThread::run(){
 //do real stuff
 fd = -1;
-dev_name = "/dev/video0";
+//dev_name = "/dev/video0";
 
-
-    fd = v4l2_open(dev_name, O_RDWR | O_NONBLOCK, 0);
+qDebug("Thread: %s",dev_name);
+    fd = v4l2_open(dev_name.toStdString().c_str(), O_RDWR | O_NONBLOCK, 0);
     if (fd < 0) {
            qDebug("Cannot open device");
            //exit(EXIT_FAILURE);
@@ -211,3 +214,8 @@ void CaptureThread::onStopCapture()
 
 
 
+void CaptureThread::setDevice( char *dev)
+{
+    this->dev_name = dev;
+
+}

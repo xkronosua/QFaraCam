@@ -5,6 +5,8 @@
 
 #include <QtWidgets>
 #include <QFileDialog>
+#include <QCameraInfo>
+#include <QtDebug>
 
 
 QFaraCam::QFaraCam(QWidget *parent) :
@@ -48,26 +50,46 @@ QFaraCam::QFaraCam(QWidget *parent) :
 
     //resize(1024,768);
 
-    t=new CaptureThread(video);
-    //video->setGeometry(ui->viewfinderPage->geometry());
-    onStartCapture();
-    displayViewfinder();
+
    // gview->setScene(scene);
 
     //gview->setScene(scene);
     //ui->graphicsView->setScene(scene);
     setMode(3);
+    QActionGroup* actions1 = new QActionGroup(ui->menuDevices);
+        actions1->setExclusive(false);
 
+    QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
+    QString lastDev;
+    foreach (const QCameraInfo &cameraInfo, cameras){
+        qDebug() << cameraInfo.deviceName();
+        actions1->addAction(ui->menuDevices->addAction(cameraInfo.description()))->setData( QVariant::fromValue(cameraInfo.deviceName()));
+        lastDev=cameraInfo.deviceName();
+    }
+    connect(actions1, SIGNAL(triggered(QAction*)), SLOT(updateCameraDevice(QAction*)));
 
+    t=new CaptureThread(video, lastDev);
+    //video->setGeometry(ui->viewfinderPage->geometry());
+    onStartCapture();
+    displayViewfinder();
 }
 
 
+void QFaraCam::updateCameraDevice(QAction *action){
+QString value = qvariant_cast<QString >(action->data());
+    qDebug()<<value;
+     t->devam=false;
+
+     t=new CaptureThread(video, value);
+     onStartCapture();
+}
+/*
 void QFaraCam::on_exit_clicked()
 {
     qDebug("bye bye");
     exit(0);
 }
-
+*/
 void QFaraCam::onStartCapture()
 {
     if(t->devam==false){
@@ -238,6 +260,7 @@ void QFaraCam::measureLength()
     //video->hide();
         this->takeImage();
      gview->drawState(0);
+      setMode(1);
 
 }
 
