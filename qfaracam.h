@@ -29,6 +29,7 @@ private slots:
    // void on_exit_clicked();
     void onStartCapture();
     void onStopCapture();
+    void updateDevList();
     void updateCameraDevice(QAction *a);
 
     void imageSaved(int id, const QString &fileName);

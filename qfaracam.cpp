@@ -35,6 +35,7 @@ QFaraCam::QFaraCam(QWidget *parent) :
      connect(ui->action_measure,SIGNAL(triggered()), this, SLOT(measureLength()));
      connect(ui->actionSave,SIGNAL(triggered()), this, SLOT(saveImage()));
      connect(ui->actionOpen,SIGNAL(triggered()), this, SLOT(openImage()));
+     connect(ui->menuDevices,SIGNAL(aboutToShow() ), this, SLOT(updateDevList()));
 
     video=new videowidget();
     video->show();
@@ -74,6 +75,19 @@ QFaraCam::QFaraCam(QWidget *parent) :
     displayViewfinder();
 }
 
+void QFaraCam::updateDevList(){
+    ui->menuDevices->clear();
+    QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
+    QString lastDev;
+    QActionGroup* actions1 = new QActionGroup(ui->menuDevices);
+        actions1->setExclusive(false);
+    foreach (const QCameraInfo &cameraInfo, cameras){
+        qDebug() << cameraInfo.deviceName();
+        actions1->addAction(ui->menuDevices->addAction(cameraInfo.description()))->setData( QVariant::fromValue(cameraInfo.deviceName()));
+        lastDev=cameraInfo.deviceName();
+    }
+    connect(actions1, SIGNAL(triggered(QAction*)), SLOT(updateCameraDevice(QAction*)));
+}
 
 void QFaraCam::updateCameraDevice(QAction *action){
 QString value = qvariant_cast<QString >(action->data());
